@@ -34,11 +34,12 @@ const Login = () => {
       });
 
       const data = await res.json();
-      console.log(data)
+      console.log(data);
 
       if (res.ok) {
         // Set login cookie to persist login state for 7 days
-        document.cookie = "loginUserId=" + userId + "; path=/; max-age=" + (7 * 24 * 60 * 60);
+        document.cookie =
+          "loginUserId=" + userId + "; path=/; max-age=" + 7 * 24 * 60 * 60;
         ("Login successful ✅");
         navigate("/dashboard");
       } else {
@@ -76,7 +77,7 @@ const Login = () => {
           <span className="text-gray-500 mr-3">🔑</span>
           <input
             type="text"
-            placeholder="User ID"
+            placeholder="Email"
             value={userId}
             onChange={(e) => setUserId(e.target.value)}
             required

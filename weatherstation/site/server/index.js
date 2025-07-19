@@ -23,7 +23,7 @@ const transporter = nodemailer.createTransport({
 
 // ✅ MongoDB Connection
 mongoose
-  .connect("mongodb://localhost:27017/user", {
+  .connect("mongodb://127.0.0.1:27017/user", {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })

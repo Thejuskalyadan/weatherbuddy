@@ -23,26 +23,81 @@ const Register = () => {
     confirmPassword: "",
   });
 
+  const [phoneError, setPhoneError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [confirmPasswordError, setConfirmPasswordError] = useState("");
+
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const navigate = useNavigate();
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    // Clear errors on input change
+    if (e.target.name === "phoneNumber") {
+      setPhoneError("");
+    }
+    if (e.target.name === "password") {
+      setPasswordError("");
+    }
+    if (e.target.name === "confirmPassword") {
+      setConfirmPasswordError("");
+    }
+
+    // For phone number, allow only digits and max length 10
+    if (e.target.name === "phoneNumber") {
+      const value = e.target.value;
+      if (/^\d{0,10}$/.test(value)) {
+        setFormData({ ...formData, [e.target.name]: value });
+      }
+    } else {
+      setFormData({ ...formData, [e.target.name]: e.target.value });
+    }
+  };
+
+  // Password validation function
+  const isValidPassword = (password) => {
+    // Minimum 7 characters, at least one letter and one number
+    const re = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{7,}$/;
+    return re.test(password);
   };
 
   const togglePassword = () => setShowPassword(!showPassword);
   const toggleConfirmPassword = () =>
     setShowConfirmPassword(!showConfirmPassword);
 
-
-
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    let valid = true;
+
+    // Validate phone number length
+    if (formData.phoneNumber.length !== 10) {
+      setPhoneError("Phone number must be exactly 10 digits.");
+      valid = false;
+    } else {
+      setPhoneError("");
+    }
+
+    // Validate password strength
+    if (!isValidPassword(formData.password)) {
+      setPasswordError(
+        "Password must be at least 7 characters long and include at least one letter and one number."
+      );
+      valid = false;
+    } else {
+      setPasswordError("");
+    }
+
+    // Validate password match
     if (formData.password !== formData.confirmPassword) {
-      alert("Passwords do not match!");
+      setConfirmPasswordError("Passwords do not match!");
+      valid = false;
+    } else {
+      setConfirmPasswordError("");
+    }
+
+    if (!valid) {
       return;
     }
 
@@ -124,6 +179,9 @@ const Register = () => {
         </div>
 
         {/* Phone Number */}
+        {phoneError && (
+          <p className="text-red-600 text-sm mb-1">{phoneError}</p>
+        )}
         <div className="flex items-center border border-gray-300 rounded-lg px-4 py-2 mb-4 bg-white shadow-sm">
           <FaPhone className="text-gray-500 mr-3" />
           <input
@@ -149,9 +207,10 @@ const Register = () => {
           />
         </div>
 
-
-
         {/* Password */}
+        {passwordError && (
+          <p className="text-red-600 text-sm mb-1">{passwordError}</p>
+        )}
         <div className="flex items-center border border-gray-300 rounded-lg px-4 py-2 mb-4 bg-white shadow-sm">
           <FaLock className="text-gray-500 mr-3" />
           <input
@@ -171,6 +230,9 @@ const Register = () => {
         </div>
 
         {/* Confirm Password */}
+        {confirmPasswordError && (
+          <p className="text-red-600 text-sm mb-1">{confirmPasswordError}</p>
+        )}
         <div className="flex items-center border border-gray-300 rounded-lg px-4 py-2 mb-6 bg-white shadow-sm">
           <FaLock className="text-gray-500 mr-3" />
           <input
