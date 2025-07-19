@@ -72,10 +72,27 @@ const Dashboard = () => {
   const [data, setData] = useState({});
   const navigate = useNavigate();
 
+  // Helper function to get cookie by name
+  const getCookie = (name) => {
+    const value = "; " + document.cookie;
+    const parts = value.split("; " + name + "=");
+    if (parts.length === 2) return parts.pop().split(";").shift();
+  };
+
   const handleLogout = () => {
+    // Remove the loginUserId cookie by setting max-age=0
+    document.cookie = "loginUserId=; path=/; max-age=0";
     alert("Logged out successfully ✅");
     navigate("/login");
   };
+
+  // On component mount, check if loginUserId cookie exists, if not redirect to login
+  React.useEffect(() => {
+    const loginUserId = getCookie("loginUserId");
+    if (!loginUserId) {
+      navigate("/login");
+    }
+  }, [navigate]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -83,6 +100,7 @@ const Dashboard = () => {
         const res = await fetch(
           "https://api.thingspeak.com/channels/2929062/feeds.json?api_key=HBDRBS3B3PDAHTLU&results=100"
         );
+        console.log("data fetched ", res)
         const json = await res.json();
         const formattedDateKey = format(selectedDate, "yyyy-MM-dd");
 

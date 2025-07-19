@@ -7,6 +7,20 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
+  // Helper function to get cookie by name
+  const getCookie = (name) => {
+    const value = "; " + document.cookie;
+    const parts = value.split("; " + name + "=");
+    if (parts.length === 2) return parts.pop().split(";").shift();
+  };
+
+  React.useEffect(() => {
+    const loginUserId = getCookie("loginUserId");
+    if (loginUserId) {
+      navigate("/dashboard");
+    }
+  }, [navigate]);
+
   const handleLogin = async (e) => {
     e.preventDefault();
 
@@ -20,9 +34,12 @@ const Login = () => {
       });
 
       const data = await res.json();
+      console.log(data)
 
       if (res.ok) {
-        alert("Login successful ✅");
+        // Set login cookie to persist login state for 7 days
+        document.cookie = "loginUserId=" + userId + "; path=/; max-age=" + (7 * 24 * 60 * 60);
+        ("Login successful ✅");
         navigate("/dashboard");
       } else {
         alert(data.message || "Login failed ❌");

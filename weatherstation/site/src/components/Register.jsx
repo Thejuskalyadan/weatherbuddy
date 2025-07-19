@@ -25,7 +25,6 @@ const Register = () => {
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [locationFetched, setLocationFetched] = useState(false);
 
   const navigate = useNavigate();
 
@@ -37,25 +36,7 @@ const Register = () => {
   const toggleConfirmPassword = () =>
     setShowConfirmPassword(!showConfirmPassword);
 
-  const getLocation = () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setLocation({
-            lat: position.coords.latitude,
-            lon: position.coords.longitude,
-          });
-          setLocationFetched(true);
-        },
-        (error) => {
-          console.error("Error getting location:", error);
-          alert("Unable to retrieve location ❌");
-        }
-      );
-    } else {
-      alert("Geolocation is not supported by this browser.");
-    }
-  };
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -168,27 +149,7 @@ const Register = () => {
           />
         </div>
 
-        {/* Location */}
-        <div className="flex items-center border border-gray-300 rounded-lg px-4 py-2 mb-4 bg-white shadow-sm">
-          <FaMapPin className="text-gray-500 mr-3" />
-          <input
-            type="text"
-            readOnly
-            value={
-              locationFetched
-                ? `Lat: ${location.lat}, Lon: ${location.lon}`
-                : "Location not provided"
-            }
-            className="flex-1 outline-none bg-transparent text-sm text-gray-700"
-          />
-          <button
-            type="button"
-            onClick={getLocation}
-            className="text-blue-600 font-medium hover:underline ml-2 text-sm"
-          >
-            📍
-          </button>
-        </div>
+
 
         {/* Password */}
         <div className="flex items-center border border-gray-300 rounded-lg px-4 py-2 mb-4 bg-white shadow-sm">
