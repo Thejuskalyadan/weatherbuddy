@@ -69,6 +69,7 @@ const graphConfig = [
 
 const Dashboard = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [selectedLocation, setSelectedLocation] = useState("location1");
   const [graphData, setGraphData] = useState({});
   const [chartTypes, setChartTypes] = useState(
     graphConfig.reduce((acc, item) => ({ ...acc, [item.key]: "line" }), {})
@@ -101,10 +102,23 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        let channelId = "2929062";
+        let usedApiKey = apiKey;
+
+        
+        if (selectedLocation === "location2") {
+          channelId = "3013318";
+          usedApiKey = "1727YL74T0OZUIGO";
+        } else if (selectedLocation === "location3") {
+          channelId = "1234567"; 
+          usedApiKey = "RANDOMAPIKEY3"; 
+        } else if (selectedLocation === "location4") {
+          channelId = "7654321"; 
+          usedApiKey = "RANDOMAPIKEY4"; 
+        }
         const res = await fetch(
-          `https://api.thingspeak.com/channels/2929062/feeds.json?api_key=${apiKey}&results=100`
+          `https://api.thingspeak.com/channels/${channelId}/feeds.json?api_key=${usedApiKey}&results=100`
         );
-        console.log("data fetched ", res)
         const json = await res.json();
         const formattedDateKey = format(selectedDate, "yyyy-MM-dd");
 
@@ -175,7 +189,7 @@ const Dashboard = () => {
     };
 
     fetchData();
-  }, [selectedDate]);
+  }, [selectedDate, selectedLocation]);
 
   const renderChart = (type, data, color) => {
     if (!Array.isArray(data) || data.length === 0)
@@ -245,7 +259,7 @@ const Dashboard = () => {
       </div>
 
       <div className="flex flex-col items-center mb-10">
-        <div className="bg-white p-6 rounded-xl shadow-lg">
+        <div className="bg-white p-6 rounded-xl shadow-lg flex flex-col items-center gap-4">
           <label className="block text-center font-semibold text-gray-700 mb-2">
             Select Date
           </label>
@@ -255,6 +269,19 @@ const Dashboard = () => {
             dateFormat="yyyy-MM-dd"
             className="border border-gray-300 rounded-md p-2 text-center w-44"
           />
+          <label className="block text-center font-semibold text-gray-700 mb-2">
+            Select Location
+          </label>
+          <select
+            value={selectedLocation}
+            onChange={(e) => setSelectedLocation(e.target.value)}
+            className="border border-gray-300 rounded-md p-2 text-center w-44"
+          >
+            <option value="location1">Location 1</option>
+            <option value="location2">Location 2</option>
+            <option value="location3">Location 3</option>
+            <option value="location4">Location 4</option>
+          </select>
         </div>
       </div>
 
