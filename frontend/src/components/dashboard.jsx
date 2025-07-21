@@ -18,6 +18,10 @@ import {
 } from "recharts";
 import { useNavigate } from "react-router-dom";
 
+
+const apiKey = import.meta.env.VITE_DATA_API_KEY;
+
+
 const graphConfig = [
   {
     key: "temperature",
@@ -98,7 +102,7 @@ const Dashboard = () => {
     const fetchData = async () => {
       try {
         const res = await fetch(
-          "https://api.thingspeak.com/channels/2929062/feeds.json?api_key=HBDRBS3B3PDAHTLU&results=100"
+          `https://api.thingspeak.com/channels/2929062/feeds.json?api_key=${apiKey}&results=100`
         );
         console.log("data fetched ", res)
         const json = await res.json();
