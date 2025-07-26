@@ -81,7 +81,7 @@ const Login = () => {
             value={userId}
             onChange={(e) => setUserId(e.target.value)}
             required
-            className="outline-none flex-1 bg-transparent placeholder-gray-400"
+            className="outline-none flex-1 bg-transparent placeholder-black"
           />
         </div>
 
@@ -93,7 +93,7 @@ const Login = () => {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            className="outline-none flex-1 bg-transparent placeholder-gray-400"
+            className="outline-none flex-1 bg-transparent placeholder-black"
           />
         </div>
 

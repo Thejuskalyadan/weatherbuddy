@@ -146,9 +146,9 @@ const Register = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
         onSubmit={handleSubmit}
-        className="w-full max-w-md bg-white p-8 rounded-2xl shadow-2xl"
+        className="w-full max-w-md bg-white/30 backdrop-blur-md border border-white/30 p-8 rounded-2xl shadow-lg"
       >
-        <h2 className="text-3xl font-bold text-center mb-6 text-gray-800">
+        <h2 className="text-3xl font-bold text-center mb-6 text-white">
           Register
         </h2>
 
