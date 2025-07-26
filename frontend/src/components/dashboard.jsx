@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import bgImage from "../bg.jpg";
 import { motion } from "framer-motion";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -244,11 +245,22 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-100 to-purple-200 p-6">
-      <header className="w-full bg-white mb-9 shadow-md p-4 rounded-[5vh]">
+    <div
+      className="min-h-screen bg-gradient-to-br from-blue-100 to-purple-200 p-6 backdrop-blur-md bg-white/30 rounded-lg"
+      style={{
+        backgroundImage: `url(${bgImage})`,
+        backgroundAttachment: "fixed",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+      }}
+    >
+      <header className="w-full bg-white/30 backdrop-blur-md mb-9 shadow-md p-4 rounded-[5vh] border border-white/40 relative z-10">
         <div className="flex flex-col md:flex-row items-center gap-4 relative">
           {/* Left Corner: Title */}
-          <h2 className="text-2xl font-serif font-bold text-gray-800 md:absolute md:left-6 md:static">
+          <h2
+            className="text-2xl font-serif font-bold text-blue-800 md:absolute md:left-6 md:static"
+            style={{ textShadow: "1px_1px_3px_rgba(0,0,0,0.1)" }}
+          >
             WEATHER BUDDY
           </h2>
 
@@ -259,14 +271,14 @@ const Dashboard = () => {
               selected={selectedDate}
               onChange={(date) => setSelectedDate(date)}
               dateFormat="yyyy-MM-dd"
-              className="border border-gray-300 rounded-lg p-2 text-center w-40"
+              className="border border-gray-300 rounded-lg p-2 text-center w-40 bg-white/30 backdrop-blur-md"
             />
 
             {/* Location Selector */}
             <select
               value={selectedLocation}
               onChange={(e) => setSelectedLocation(e.target.value)}
-              className="border border-gray-300 rounded-lg p-2 text-center w-40"
+              className="border border-gray-300 rounded-lg p-2 text-center w-40 bg-white/30 backdrop-blur-md"
             >
               <option value="location1">Location 1</option>
               <option value="location2">Location 2</option>
@@ -278,10 +290,17 @@ const Dashboard = () => {
           {/* Right Corner: Logout Button */}
           <button
             onClick={handleLogout}
-            className="bg-black hover:bg-black/80 text-white px-5 py-2 rounded-lg shadow-md md:absolute md:right-6 md:static"
+            className="bg-white/50 hover:bg-gray-100 text-gray-800 px-5 py-2 rounded-lg shadow-md md:absolute md:right-6 md:static backdrop-blur-md border border-white/40"
           >
             Logout
           </button>
+
+          {/* <button
+            onClick={handleLogout}
+            className="bg-transparent hover:bg-gray-100/30 text-gray-700 px-5 py-2 rounded-lg shadow-md md:absolute md:right-6 md:static backdrop-blur-md border border-gray-400"
+          >
+            Logout
+          </button> */}
         </div>
       </header>
 
@@ -294,7 +313,7 @@ const Dashboard = () => {
         {graphConfig.map((item) => (
           <motion.div
             key={item.key}
-            className={`min-w-[220px] md:min-w-[200px] md:w-auto rounded-xl shadow-md p-4 ${item.color}`}
+            className={`min-w-[220px] md:min-w-[200px] md:w-auto rounded-xl shadow-md p-4 bg-white/30 backdrop-blur-md border border-white/40`}
             whileHover={{ scale: 1.05 }}
             transition={{ type: "spring", stiffness: 300 }}
             style={{ flex: "0 0 auto" }}
@@ -312,7 +331,10 @@ const Dashboard = () => {
       {/* ✅ Graphs */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 px-6">
         {graphConfig.map((item) => (
-          <div key={item.key} className="bg-white rounded-xl p-4 shadow-md">
+          <div
+            key={item.key}
+            className="bg-white/30 rounded-xl p-4 shadow-md backdrop-blur-md border border-white/40"
+          >
             <div className="flex justify-between items-center mb-2">
               <h4 className="text-md font-semibold">{item.label}</h4>
               <select
@@ -323,7 +345,7 @@ const Dashboard = () => {
                     [item.key]: e.target.value,
                   }))
                 }
-                className="border p-1 rounded-md text-sm"
+                className="border p-1 rounded-md text-sm bg-white/30 backdrop-blur-md"
               >
                 <option value="line">Line</option>
                 <option value="bar">Bar</option>
