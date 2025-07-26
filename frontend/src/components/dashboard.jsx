@@ -286,17 +286,18 @@ const Dashboard = () => {
       </div>
 
       {/* ✅ Data Cards */}
-      <div className="flex overflow-x-auto space-x-10 pb-4 ml-10 mb-6">
+      <div className="flex md:flex-nowrap flex-row overflow-x-auto md:overflow-x-visible space-x-4 md:space-x-10 pb-4 mb-6 justify-start md:justify-center gap-0 scrollbar-thin scrollbar-thumb-blue-300 scrollbar-track-blue-100" style={{ WebkitOverflowScrolling: 'touch' }}>
         {graphConfig.map((item) => (
           <motion.div
             key={item.key}
-            className={`min-w-[200px] rounded-xl shadow-md p-4 ${item.color}`}
+            className={`min-w-[220px] md:min-w-[200px] md:w-auto rounded-xl shadow-md p-4 ${item.color}`}
             whileHover={{ scale: 1.05 }}
             transition={{ type: "spring", stiffness: 300 }}
+            style={{ flex: "0 0 auto" }}
           >
-            <div className="text-4xl mb-2">{item.icon}</div>
-            <h3 className="text-xl font-semibold">{item.label}</h3>
-            <p className="text-lg text-gray-700">
+            <div className="text-4xl mb-2 flex justify-center">{item.icon}</div>
+            <h3 className="text-xl font-semibold text-center">{item.label}</h3>
+            <p className="text-lg text-gray-700 text-center">
               {data[item.key] !== "-" && data[item.key] !== undefined
                 ? data[item.key]
                 : "N/A"}
