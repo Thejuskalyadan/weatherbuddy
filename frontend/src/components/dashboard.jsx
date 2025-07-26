@@ -245,122 +245,133 @@ const Dashboard = () => {
   };
 
   return (
-    <div
-      className="min-h-screen bg-gradient-to-br from-blue-100 to-purple-200 p-6 backdrop-blur-md bg-white/30 rounded-lg"
-      style={{
-        backgroundImage: `url(${bgImage})`,
-        backgroundAttachment: "fixed",
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-      }}
-    >
-      <header className="w-full bg-white/30 backdrop-blur-md mb-9 shadow-md p-4 rounded-[5vh] border border-white/40 relative z-10">
-        <div className="flex flex-col md:flex-row items-center gap-4 relative">
-          {/* Left Corner: Title */}
-          <h2
-            className="text-2xl font-serif font-bold text-blue-800 md:absolute md:left-6 md:static"
-            style={{ textShadow: "1px_1px_3px_rgba(0,0,0,0.1)" }}
-          >
-            WEATHER BUDDY
-          </h2>
-
-          {/* Center: Inputs */}
-          <div className="flex flex-col sm:flex-row items-center gap-4 mx-auto">
-            {/* Date Picker */}
-            <DatePicker
-              selected={selectedDate}
-              onChange={(date) => setSelectedDate(date)}
-              dateFormat="yyyy-MM-dd"
-              className="border border-gray-300 rounded-lg p-2 text-center w-40 bg-white/30 backdrop-blur-md"
-            />
-
-            {/* Location Selector */}
-            <select
-              value={selectedLocation}
-              onChange={(e) => setSelectedLocation(e.target.value)}
-              className="border border-gray-300 rounded-lg p-2 text-center w-40 bg-white/30 backdrop-blur-md"
+    <div className="min-h-screen bg-gradient-to-br from-blue-100 to-purple-200 p-6 backdrop-blur-md bg-white/30 rounded-lg relative overflow-hidden">
+      <div
+        aria-hidden="true"
+        style={{
+          position: "absolute",
+          inset: 0,
+          zIndex: 0,
+          backgroundImage: `url(${bgImage})`,
+          backgroundAttachment: "fixed",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          filter: "brightness(0.6)",
+        }}
+      />
+      <div className="relative z-10">
+        <header className="w-full bg-white/30 backdrop-blur-md mb-9 shadow-md p-4 rounded-[5vh] border border-white/40 relative z-10">
+          <div className="flex flex-col md:flex-row items-center gap-4 relative">
+            {/* Left Corner: Title */}
+            <h2
+              className="text-2xl font-serif font-bold text-blue-800 md:absolute md:left-6 md:static"
+              style={{ textShadow: "1px_1px_3px_rgba(0,0,0,0.1)" }}
             >
-              <option value="location1">Location 1</option>
-              <option value="location2">Location 2</option>
-              <option value="location3">Location 3</option>
-              <option value="location4">Location 4</option>
-            </select>
-          </div>
+              WEATHER BUDDY
+            </h2>
 
-          {/* Right Corner: Logout Button */}
-          <button
-            onClick={handleLogout}
-            className="bg-white/50 hover:bg-gray-100 text-gray-800 px-5 py-2 rounded-lg shadow-md md:absolute md:right-6 md:static backdrop-blur-md border border-white/40"
-          >
-            Logout
-          </button>
+            {/* Center: Inputs */}
+            <div className="flex flex-col sm:flex-row items-center gap-4 mx-auto">
+              {/* Date Picker */}
+              <DatePicker
+                selected={selectedDate}
+                onChange={(date) => setSelectedDate(date)}
+                dateFormat="yyyy-MM-dd"
+                className="border border-gray-300 rounded-lg p-2 text-center w-40 bg-white/30 backdrop-blur-md"
+              />
 
-          {/* <button
+              {/* Location Selector */}
+              <select
+                value={selectedLocation}
+                onChange={(e) => setSelectedLocation(e.target.value)}
+                className="border border-gray-300 rounded-lg p-2 text-center w-40 bg-white/30 backdrop-blur-md"
+              >
+                <option value="location1">Location 1</option>
+                <option value="location2">Location 2</option>
+                <option value="location3">Location 3</option>
+                <option value="location4">Location 4</option>
+              </select>
+            </div>
+
+            {/* Right Corner: Logout Button */}
+            <button
+              onClick={handleLogout}
+              className="bg-white/50 hover:bg-gray-100 text-gray-800 px-5 py-2 rounded-lg shadow-md md:absolute md:right-6 md:static backdrop-blur-md border border-white/40"
+            >
+              Logout
+            </button>
+
+            {/* <button
             onClick={handleLogout}
             className="bg-transparent hover:bg-gray-100/30 text-gray-700 px-5 py-2 rounded-lg shadow-md md:absolute md:right-6 md:static backdrop-blur-md border border-gray-400"
           >
             Logout
           </button> */}
-        </div>
-      </header>
-
-      {/* ✅ Data Cards */}
-
-      <div
-        className="flex md:flex-nowrap flex-row overflow-x-auto md:overflow-x-visible space-x-4 md:space-x-10 pb-4 mb-6 justify-start md:justify-center gap-0 scrollbar-thin scrollbar-thumb-blue-300 scrollbar-track-blue-100"
-        style={{ WebkitOverflowScrolling: "touch" }}
-      >
-        {graphConfig.map((item) => (
-          <motion.div
-            key={item.key}
-            className={`min-w-[220px] md:min-w-[200px] md:w-auto rounded-xl shadow-md p-4 bg-white/30 backdrop-blur-md border border-white/40`}
-            whileHover={{ scale: 1.05 }}
-            transition={{ type: "spring", stiffness: 300 }}
-            style={{ flex: "0 0 auto" }}
-          >
-            <div className="text-4xl mb-2 flex justify-center">{item.icon}</div>
-            <h3 className="text-xl font-semibold text-center">{item.label}</h3>
-            <p className="text-lg text-gray-700 text-center">
-              {data[item.key] !== "-" && data[item.key] !== undefined
-                ? data[item.key]
-                : "N/A"}
-            </p>
-          </motion.div>
-        ))}
-      </div>
-      {/* ✅ Graphs */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 px-6">
-        {graphConfig.map((item) => (
-          <div
-            key={item.key}
-            className="bg-white/30 rounded-xl p-4 shadow-md backdrop-blur-md border border-white/40"
-          >
-            <div className="flex justify-between items-center mb-2">
-              <h4 className="text-md font-semibold">{item.label}</h4>
-              <select
-                value={chartTypes[item.key]}
-                onChange={(e) =>
-                  setChartTypes((prev) => ({
-                    ...prev,
-                    [item.key]: e.target.value,
-                  }))
-                }
-                className="border p-1 rounded-md text-sm bg-white/30 backdrop-blur-md"
-              >
-                <option value="line">Line</option>
-                <option value="bar">Bar</option>
-                <option value="scatter">Scatter</option>
-              </select>
-            </div>
-            <ResponsiveContainer width="100%" height={200}>
-              {renderChart(
-                chartTypes[item.key],
-                graphData[item.key] || [],
-                item.stroke
-              )}
-            </ResponsiveContainer>
           </div>
-        ))}
+        </header>
+
+        {/* ✅ Data Cards */}
+
+        <div
+          className="flex md:flex-nowrap flex-row overflow-x-auto md:overflow-x-visible space-x-4 md:space-x-10 pb-4 mb-6 justify-start md:justify-center gap-0 scrollbar-thin scrollbar-thumb-blue-300 scrollbar-track-blue-100"
+          style={{ WebkitOverflowScrolling: "touch" }}
+        >
+          {graphConfig.map((item) => (
+            <motion.div
+              key={item.key}
+              className={`min-w-[220px] md:min-w-[200px] md:w-auto rounded-xl shadow-md p-4 bg-white/30 backdrop-blur-md border border-white/40`}
+              whileHover={{ scale: 1.05 }}
+              transition={{ type: "spring", stiffness: 300 }}
+              style={{ flex: "0 0 auto" }}
+            >
+              <div className="text-4xl mb-2 flex justify-center">
+                {item.icon}
+              </div>
+              <h3 className="text-xl font-semibold text-center">
+                {item.label}
+              </h3>
+              <p className="text-lg text-gray-700 text-center">
+                {data[item.key] !== "-" && data[item.key] !== undefined
+                  ? data[item.key]
+                  : "N/A"}
+              </p>
+            </motion.div>
+          ))}
+        </div>
+        {/* ✅ Graphs */}
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 px-6">
+          {graphConfig.map((item) => (
+            <div
+              key={item.key}
+              className="bg-white/30 rounded-xl p-4 shadow-md backdrop-blur-md border border-white/40"
+            >
+              <div className="flex justify-between items-center mb-2">
+                <h4 className="text-md font-semibold">{item.label}</h4>
+                <select
+                  value={chartTypes[item.key]}
+                  onChange={(e) =>
+                    setChartTypes((prev) => ({
+                      ...prev,
+                      [item.key]: e.target.value,
+                    }))
+                  }
+                  className="border p-1 rounded-md text-sm bg-white/30 backdrop-blur-md"
+                >
+                  <option value="line">Line</option>
+                  <option value="bar">Bar</option>
+                  <option value="scatter">Scatter</option>
+                </select>
+              </div>
+              <ResponsiveContainer width="100%" height={200}>
+                {renderChart(
+                  chartTypes[item.key],
+                  graphData[item.key] || [],
+                  item.stroke
+                )}
+              </ResponsiveContainer>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
