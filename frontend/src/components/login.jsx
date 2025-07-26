@@ -67,13 +67,13 @@ const Login = () => {
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: "easeOut" }}
-        className="bg-white p-8 rounded-2xl shadow-xl w-96"
+        className="bg-white/30 backdrop-blur-md border border-white/30 rounded-2xl shadow-lg w-96 p-8"
       >
         <h2 className="text-center text-2xl font-semibold text-gray-800 mb-6">
           Login
         </h2>
 
-        <div className="flex items-center border border-gray-300 rounded-lg px-4 py-2 mb-4 transition-all duration-200 focus-within:border-blue-500">
+        <div className="flex items-center border border-white/30 rounded-lg px-4 py-2 mb-4 transition-all duration-200 focus-within:border-blue-400 bg-white/20 backdrop-blur-sm">
           <span className="text-gray-500 mr-3">🔑</span>
           <input
             type="text"
@@ -85,7 +85,7 @@ const Login = () => {
           />
         </div>
 
-        <div className="flex items-center border border-gray-300 rounded-lg px-4 py-2 mb-6 transition-all duration-200 focus-within:border-blue-500">
+        <div className="flex items-center border border-white/30 rounded-lg px-4 py-2 mb-6 transition-all duration-200 focus-within:border-blue-400 bg-white/20 backdrop-blur-sm">
           <span className="text-gray-500 mr-3">🔒</span>
           <input
             type="password"
@@ -101,7 +101,7 @@ const Login = () => {
           type="submit"
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition duration-300"
+          className="w-full bg-blue-600 bg-opacity-80 text-white py-2 rounded-lg hover:bg-blue-700 transition duration-300"
         >
           Login
         </motion.button>

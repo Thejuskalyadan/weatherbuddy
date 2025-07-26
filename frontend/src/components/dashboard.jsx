@@ -18,9 +18,7 @@ import {
 } from "recharts";
 import { useNavigate } from "react-router-dom";
 
-
 const apiKey = import.meta.env.VITE_DATA_API_KEY;
-
 
 const graphConfig = [
   {
@@ -105,16 +103,15 @@ const Dashboard = () => {
         let channelId = "2929062";
         let usedApiKey = apiKey;
 
-        
         if (selectedLocation === "location2") {
           channelId = "3013318";
           usedApiKey = "1727YL74T0OZUIGO";
         } else if (selectedLocation === "location3") {
-          channelId = "1234567"; 
-          usedApiKey = "RANDOMAPIKEY3"; 
+          channelId = "1234567";
+          usedApiKey = "RANDOMAPIKEY3";
         } else if (selectedLocation === "location4") {
-          channelId = "7654321"; 
-          usedApiKey = "RANDOMAPIKEY4"; 
+          channelId = "7654321";
+          usedApiKey = "RANDOMAPIKEY4";
         }
         const res = await fetch(
           `https://api.thingspeak.com/channels/${channelId}/feeds.json?api_key=${usedApiKey}&results=100`
@@ -248,45 +245,52 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-100 to-purple-200 p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-3xl font-serif text-gray-800">WEATHER BUDDY</h2>
-        <button
-          onClick={handleLogout}
-          className="bg-black hover:bg-black/80 text-white px-4 py-4 rounded-lg shadow-md"
-        >
-          Logout
-        </button>
-      </div>
+      <header className="w-full bg-white mb-9 shadow-md p-4 rounded-[5vh]">
+        <div className="flex flex-col md:flex-row items-center gap-4 relative">
+          {/* Left Corner: Title */}
+          <h2 className="text-2xl font-serif font-bold text-gray-800 md:absolute md:left-6 md:static">
+            WEATHER BUDDY
+          </h2>
 
-      <div className="flex flex-col items-center mb-10">
-        <div className="bg-white p-6 rounded-xl shadow-lg flex flex-col items-center gap-4">
-          <label className="block text-center font-semibold text-gray-700 mb-2">
-            Select Date
-          </label>
-          <DatePicker
-            selected={selectedDate}
-            onChange={(date) => setSelectedDate(date)}
-            dateFormat="yyyy-MM-dd"
-            className="border border-gray-300 rounded-md p-2 text-center w-44"
-          />
-          <label className="block text-center font-semibold text-gray-700 mb-2">
-            Select Location
-          </label>
-          <select
-            value={selectedLocation}
-            onChange={(e) => setSelectedLocation(e.target.value)}
-            className="border border-gray-300 rounded-md p-2 text-center w-44"
+          {/* Center: Inputs */}
+          <div className="flex flex-col sm:flex-row items-center gap-4 mx-auto">
+            {/* Date Picker */}
+            <DatePicker
+              selected={selectedDate}
+              onChange={(date) => setSelectedDate(date)}
+              dateFormat="yyyy-MM-dd"
+              className="border border-gray-300 rounded-lg p-2 text-center w-40"
+            />
+
+            {/* Location Selector */}
+            <select
+              value={selectedLocation}
+              onChange={(e) => setSelectedLocation(e.target.value)}
+              className="border border-gray-300 rounded-lg p-2 text-center w-40"
+            >
+              <option value="location1">Location 1</option>
+              <option value="location2">Location 2</option>
+              <option value="location3">Location 3</option>
+              <option value="location4">Location 4</option>
+            </select>
+          </div>
+
+          {/* Right Corner: Logout Button */}
+          <button
+            onClick={handleLogout}
+            className="bg-black hover:bg-black/80 text-white px-5 py-2 rounded-lg shadow-md md:absolute md:right-6 md:static"
           >
-            <option value="location1">Location 1</option>
-            <option value="location2">Location 2</option>
-            <option value="location3">Location 3</option>
-            <option value="location4">Location 4</option>
-          </select>
+            Logout
+          </button>
         </div>
-      </div>
+      </header>
 
       {/* ✅ Data Cards */}
-      <div className="flex md:flex-nowrap flex-row overflow-x-auto md:overflow-x-visible space-x-4 md:space-x-10 pb-4 mb-6 justify-start md:justify-center gap-0 scrollbar-thin scrollbar-thumb-blue-300 scrollbar-track-blue-100" style={{ WebkitOverflowScrolling: 'touch' }}>
+
+      <div
+        className="flex md:flex-nowrap flex-row overflow-x-auto md:overflow-x-visible space-x-4 md:space-x-10 pb-4 mb-6 justify-start md:justify-center gap-0 scrollbar-thin scrollbar-thumb-blue-300 scrollbar-track-blue-100"
+        style={{ WebkitOverflowScrolling: "touch" }}
+      >
         {graphConfig.map((item) => (
           <motion.div
             key={item.key}
@@ -305,7 +309,6 @@ const Dashboard = () => {
           </motion.div>
         ))}
       </div>
-
       {/* ✅ Graphs */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 px-6">
         {graphConfig.map((item) => (
