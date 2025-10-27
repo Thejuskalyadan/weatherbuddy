@@ -17,52 +17,82 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import { useNavigate } from "react-router-dom";
-
+// import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom"; // Combined import
 const apiKey = import.meta.env.VITE_DATA_API_KEY;
 
 const graphConfig = [
   {
     key: "temperature",
     label: "Temperature (°C)",
-    icon: "🌡️",
-    color: "bg-red-100",
-    stroke: "#f87171",
+    icon: (
+      <div className="text-5xl animate-pulse-fast">
+        <span role="img" aria-label="thermometer">
+          🔥
+        </span>
+      </div>
+    ),
+    stroke: "#ef4444", // Red-500
   },
   {
     key: "humidity",
     label: "Humidity (%)",
-    icon: "💧",
-    color: "bg-blue-100",
-    stroke: "#60a5fa",
+    icon: (
+      <div className="text-5xl animate-bounce-slow">
+        <span role="img" aria-label="water drop">
+          💧
+        </span>
+      </div>
+    ),
+    stroke: "#3b82f6", // Blue-500
   },
   {
     key: "windSpeed",
     label: "Wind Speed (km/h)",
-    icon: "🌬️",
-    color: "bg-green-100",
-    stroke: "#34d399",
+    icon: (
+      <div className="text-5xl animate-spin-slow">
+        <span role="img" aria-label="wind">
+          💨
+        </span>
+      </div>
+    ),
+    stroke: "#10b981", // Green-500
   },
   {
     key: "rainfall",
     label: "Rainfall (mm)",
-    icon: "🌧️",
-    color: "bg-indigo-100",
-    stroke: "#818cf8",
+    icon: (
+      <div className="text-5xl animate-bounce-slow">
+        <span role="img" aria-label="umbrella with rain drops">
+          ☔
+        </span>
+      </div>
+    ),
+    stroke: "#6366f1", // Indigo-500
   },
   {
     key: "pressure",
     label: "Pressure (hPa)",
-    icon: "⬇️",
-    color: "bg-yellow-100",
-    stroke: "#fbbf24",
+    icon: (
+      <div className="text-5xl animate-float">
+        <span role="img" aria-label="down arrow">
+          ⬇️
+        </span>
+      </div>
+    ),
+    stroke: "#f59e0b", // Amber-500
   },
   {
     key: "uvRays",
     label: "UV Index",
-    icon: "☀️",
-    color: "bg-orange-100",
-    stroke: "#a78bfa",
+    icon: (
+      <div className="text-5xl animate-wiggle">
+        <span role="img" aria-label="sunglasses">
+          😎
+        </span>
+      </div>
+    ),
+    stroke: "#a855f7", // Purple-500
   },
 ];
 
@@ -264,10 +294,10 @@ const Dashboard = () => {
           <div className="flex flex-col md:flex-row items-center gap-4 relative">
             {/* Left Corner: Title */}
             <h2
-              className="text-2xl font-serif font-bold text-blue-800 md:absolute md:left-6 md:static"
+              className="text-2xl font-serif font-bold text-blue-800 md:absolute md:left-6 "
               style={{ textShadow: "1px_1px_3px_rgba(0,0,0,0.1)" }}
             >
-              WEATHER BUDDY
+              Vrishti
             </h2>
 
             {/* Center: Inputs */}
@@ -292,21 +322,21 @@ const Dashboard = () => {
                 <option value="location4">Location 4</option>
               </select>
             </div>
-
-            {/* Right Corner: Logout Button */}
-            <button
-              onClick={handleLogout}
-              className="bg-white/50 hover:bg-gray-100 text-gray-800 px-5 py-2 rounded-lg shadow-md md:absolute md:right-6 md:static backdrop-blur-md border border-white/40"
-            >
-              Logout
-            </button>
-
-            {/* <button
-            onClick={handleLogout}
-            className="bg-transparent hover:bg-gray-100/30 text-gray-700 px-5 py-2 rounded-lg shadow-md md:absolute md:right-6 md:static backdrop-blur-md border border-gray-400"
-          >
-            Logout
-          </button> */}
+            {/* Right Corner: Links and Logout Button */}
+            <div className="flex gap-8 items-center md:absolute md:right-6">
+              <Link
+                to="/vrishti"
+                className="bg-white/50 hover:bg-gray-100 text-gray-800 px-4 py-2 rounded-lg shadow-md backdrop-blur-md border border-white/40 text-sm font-medium"
+              >
+                Know About Vrishti
+              </Link>
+              <button
+                onClick={handleLogout}
+                className="bg-white/50 hover:bg-gray-100 text-gray-800 px-5 py-2 rounded-lg shadow-md backdrop-blur-md border border-white/40"
+              >
+                Logout
+              </button>
+            </div>
           </div>
         </header>
 
