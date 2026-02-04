@@ -59,7 +59,7 @@ const Login = () => {
         transition={{ duration: 0.6, ease: "easeOut" }}
         className="absolute top-6 left-8 text-3xl font-serif text-white drop-shadow-lg"
       >
-        WEATHER BUDDY
+        Vrishti
       </motion.h1>
 
       <motion.form

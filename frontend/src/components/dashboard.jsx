@@ -104,6 +104,11 @@ const Dashboard = () => {
     graphConfig.reduce((acc, item) => ({ ...acc, [item.key]: "line" }), {})
   );
   const [data, setData] = useState({});
+  const [showLatestModal, setShowLatestModal] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState(null);
+  const [latestData, setLatestData] = useState(null);
+
+
   const navigate = useNavigate();
 
   // Helper function to get cookie by name
@@ -145,13 +150,30 @@ const Dashboard = () => {
           usedApiKey = "RANDOMAPIKEY4";
         }
         const res = await fetch(
-          `https://api.thingspeak.com/channels/${channelId}/feeds.json?api_key=${usedApiKey}&results=100`
+          `https://api.thingspeak.com/channels/${channelId}/feeds.json?api_key=${usedApiKey}&results=100`,
         );
         const json = await res.json();
+        // ✅ ALWAYS store LAST ADDED DATA (independent of selected date)
+        if (json.feeds && json.feeds.length > 0) {
+          const lastFeed = json.feeds[json.feeds.length - 1];
+
+          setLatestData({
+            temperature: lastFeed.field1,
+            humidity: lastFeed.field2,
+            windSpeed: lastFeed.field4,
+            rainfall: lastFeed.field5,
+            pressure: lastFeed.field3,
+            uvRays: lastFeed.field6,
+            createdAt: lastFeed.created_at,
+          });
+
+          setLastUpdated(new Date(lastFeed.created_at));
+        }
+
         const formattedDateKey = format(selectedDate, "yyyy-MM-dd");
 
         const filteredFeeds = json.feeds.filter((feed) =>
-          feed.created_at.startsWith(formattedDateKey)
+          feed.created_at.startsWith(formattedDateKey),
         );
 
         if (filteredFeeds.length === 0) {
@@ -161,6 +183,8 @@ const Dashboard = () => {
         }
 
         const latestFeed = filteredFeeds[filteredFeeds.length - 1];
+        setLastUpdated(new Date(latestFeed.created_at));
+
         setData({
           temperature: latestFeed.field1,
           humidity: latestFeed.field2,
@@ -331,6 +355,13 @@ const Dashboard = () => {
                 Know About Vrishti
               </Link>
               <button
+                onClick={() => setShowLatestModal(true)}
+                className="bg-white/50 hover:bg-gray-100 text-gray-800 px-4 py-2 rounded-lg shadow-md backdrop-blur-md border border-white/40 text-sm font-medium"
+              >
+                Latest Data
+              </button>
+
+              <button
                 onClick={handleLogout}
                 className="bg-white/50 hover:bg-gray-100 text-gray-800 px-5 py-2 rounded-lg shadow-md backdrop-blur-md border border-white/40"
               >
@@ -396,13 +427,73 @@ const Dashboard = () => {
                 {renderChart(
                   chartTypes[item.key],
                   graphData[item.key] || [],
-                  item.stroke
+                  item.stroke,
                 )}
               </ResponsiveContainer>
             </div>
           ))}
         </div>
       </div>
+      {/* ================= LATEST DATA MODAL ================= */}
+      {showLatestModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.3 }}
+            className="w-[90%] max-w-4xl bg-white/30 backdrop-blur-xl rounded-2xl p-6 shadow-xl border border-white/40 relative"
+          >
+            {/* Close Button */}
+            <button
+              onClick={() => setShowLatestModal(false)}
+              className="absolute top-4 right-4 text-xl font-bold text-gray-800 hover:text-black"
+            >
+              ✕
+            </button>
+
+            {/* Title */}
+            <h2 className="text-2xl font-bold text-center mb-2">
+              Latest Weather Data
+            </h2>
+
+            {/* Last Updated */}
+            <p className="text-center text-sm text-gray-700 mb-6">
+              🕒 Last Updated:{" "}
+              {latestData
+                ? new Date(latestData.createdAt).toLocaleDateString() +
+                  " " +
+                  new Date(latestData.createdAt).toLocaleTimeString()
+                : "N/A"}
+            </p>
+
+            {/* Data Cards */}
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+              {graphConfig.map((item) => (
+                <motion.div
+                  key={item.key}
+                  className="rounded-xl shadow-md p-4 bg-white/40 backdrop-blur-md border border-white/40"
+                  whileHover={{ scale: 1.05 }}
+                >
+                  <div className="text-4xl mb-2 flex justify-center">
+                    {item.icon}
+                  </div>
+
+                  <h3 className="text-lg font-semibold text-center">
+                    {item.label}
+                  </h3>
+
+                  <p className="text-md text-gray-800 text-center">
+                    {latestData && latestData[item.key]
+                      ? latestData[item.key]
+                      : "N/A"}
+                  </p>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        </div>
+      )}
+      {/* ==================================================== */}
     </div>
   );
 };
