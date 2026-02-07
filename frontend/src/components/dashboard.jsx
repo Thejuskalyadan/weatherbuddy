@@ -1,499 +1,248 @@
 import React, { useState, useEffect } from "react";
-import bgImage from "../bg.jpg";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
 import { format } from "date-fns";
 import {
-  LineChart,
-  Line,
-  BarChart,
-  Bar,
-  ScatterChart,
-  Scatter,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
+  LineChart, Line, BarChart, Bar, ScatterChart, Scatter,
+  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from "recharts";
-// import { useNavigate } from "react-router-dom";
-import { useNavigate, Link } from "react-router-dom"; // Combined import
-const apiKey = import.meta.env.VITE_DATA_API_KEY;
+import { useNavigate, Link } from "react-router-dom";
+import bgImage from "../bg.jpg";
 
 const graphConfig = [
-  {
-    key: "temperature",
-    label: "Temperature (°C)",
-    icon: (
-      <div className="text-5xl animate-pulse-fast">
-        <span role="img" aria-label="thermometer">
-          🔥
-        </span>
-      </div>
-    ),
-    stroke: "#ef4444", // Red-500
-  },
-  {
-    key: "humidity",
-    label: "Humidity (%)",
-    icon: (
-      <div className="text-5xl animate-bounce-slow">
-        <span role="img" aria-label="water drop">
-          💧
-        </span>
-      </div>
-    ),
-    stroke: "#3b82f6", // Blue-500
-  },
-  {
-    key: "windSpeed",
-    label: "Wind Speed (km/h)",
-    icon: (
-      <div className="text-5xl animate-spin-slow">
-        <span role="img" aria-label="wind">
-          💨
-        </span>
-      </div>
-    ),
-    stroke: "#10b981", // Green-500
-  },
-  {
-    key: "rainfall",
-    label: "Rainfall (mm)",
-    icon: (
-      <div className="text-5xl animate-bounce-slow">
-        <span role="img" aria-label="umbrella with rain drops">
-          ☔
-        </span>
-      </div>
-    ),
-    stroke: "#6366f1", // Indigo-500
-  },
-  {
-    key: "pressure",
-    label: "Pressure (hPa)",
-    icon: (
-      <div className="text-5xl animate-float">
-        <span role="img" aria-label="down arrow">
-          ⬇️
-        </span>
-      </div>
-    ),
-    stroke: "#f59e0b", // Amber-500
-  },
-  {
-    key: "uvRays",
-    label: "UV Index",
-    icon: (
-      <div className="text-5xl animate-wiggle">
-        <span role="img" aria-label="sunglasses">
-          😎
-        </span>
-      </div>
-    ),
-    stroke: "#a855f7", // Purple-500
-  },
+  { key: "temperature", label: "Temperature", unit: "°C", icon: "🔥", stroke: "#ff4d4d" },
+  { key: "humidity", label: "Humidity", unit: "%", icon: "💧", stroke: "#4da6ff" },
+  { key: "windSpeed", label: "Wind Speed", unit: "km/h", icon: "💨", stroke: "#33cc33" },
+  { key: "rainfall", label: "Rainfall", unit: "mm", icon: "☔", stroke: "#a64dff" },
+  { key: "pressure", label: "Pressure", unit: "hPa", icon: "📉", stroke: "#ffcc00" },
+  { key: "uvRays", label: "UV Index", unit: "", icon: "☀️", stroke: "#ff9900" },
 ];
 
 const Dashboard = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedLocation, setSelectedLocation] = useState("location1");
   const [graphData, setGraphData] = useState({});
-  const [chartTypes, setChartTypes] = useState(
-    graphConfig.reduce((acc, item) => ({ ...acc, [item.key]: "line" }), {})
-  );
+  const [chartTypes, setChartTypes] = useState(graphConfig.reduce((acc, item) => ({ ...acc, [item.key]: "line" }), {}));
   const [data, setData] = useState({});
   const [showLatestModal, setShowLatestModal] = useState(false);
-  const [lastUpdated, setLastUpdated] = useState(null);
   const [latestData, setLatestData] = useState(null);
-
-
+  const [fetchError, setFetchError] = useState(null);
   const navigate = useNavigate();
 
-  // Helper function to get cookie by name
   const getCookie = (name) => {
     const value = "; " + document.cookie;
     const parts = value.split("; " + name + "=");
     if (parts.length === 2) return parts.pop().split(";").shift();
   };
 
-  const handleLogout = () => {
-    // Remove the loginUserId cookie by setting max-age=0
-    document.cookie = "loginUserId=; path=/; max-age=0";
-    alert("Logged out successfully ✅");
-    navigate("/login");
-  };
-
-  // On component mount, check if loginUserId cookie exists, if not redirect to login
-  React.useEffect(() => {
-    const loginUserId = getCookie("loginUserId");
-    if (!loginUserId) {
-      navigate("/login");
-    }
+  useEffect(() => {
+    if (!getCookie("loginUserId")) navigate("/login");
   }, [navigate]);
 
   useEffect(() => {
     const fetchData = async () => {
+      setFetchError(null);
       try {
         let channelId = "2929062";
-        let usedApiKey = apiKey;
+        const apiKey = import.meta.env.VITE_DATA_API_KEY;
 
-        if (selectedLocation === "location2") {
-          channelId = "3013318";
-          usedApiKey = "1727YL74T0OZUIGO";
-        } else if (selectedLocation === "location3") {
-          channelId = "1234567";
-          usedApiKey = "RANDOMAPIKEY3";
-        } else if (selectedLocation === "location4") {
-          channelId = "7654321";
-          usedApiKey = "RANDOMAPIKEY4";
-        }
+        const params = new URLSearchParams();
+        params.set("results", "100");
+        if (apiKey) params.set("api_key", apiKey);
+
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 12000);
+
         const res = await fetch(
-          `https://api.thingspeak.com/channels/${channelId}/feeds.json?api_key=${usedApiKey}&results=100`,
+          `https://api.thingspeak.com/channels/${channelId}/feeds.json?${params.toString()}`,
+          { signal: controller.signal }
         );
-        const json = await res.json();
-        // ✅ ALWAYS store LAST ADDED DATA (independent of selected date)
-        if (json.feeds && json.feeds.length > 0) {
-          const lastFeed = json.feeds[json.feeds.length - 1];
+        clearTimeout(timeoutId);
 
+        if (!res.ok) {
+          const body = await res.text().catch(() => "");
+          throw new Error(`ThingSpeak request failed (${res.status})${body ? `: ${body}` : ""}`);
+        }
+
+        const json = await res.json();
+
+        if (json.feeds?.length > 0) {
+          const last = json.feeds[json.feeds.length - 1];
           setLatestData({
-            temperature: lastFeed.field1,
-            humidity: lastFeed.field2,
-            windSpeed: lastFeed.field4,
-            rainfall: lastFeed.field5,
-            pressure: lastFeed.field3,
-            uvRays: lastFeed.field6,
-            createdAt: lastFeed.created_at,
+            temperature: last.field1, humidity: last.field2, windSpeed: last.field4,
+            rainfall: last.field5, pressure: last.field3, uvRays: last.field6, createdAt: last.created_at
           });
 
-          setLastUpdated(new Date(lastFeed.created_at));
+          const formattedDateKey = format(selectedDate, "yyyy-MM-dd");
+          const filteredFeeds = json.feeds.filter(f => f.created_at.startsWith(formattedDateKey));
+
+          const currentDisplay = filteredFeeds.length > 0 ? filteredFeeds[filteredFeeds.length - 1] : {};
+          setData({
+            temperature: currentDisplay.field1 || "--", humidity: currentDisplay.field2 || "--",
+            windSpeed: currentDisplay.field4 || "--", rainfall: currentDisplay.field5 || "--",
+            pressure: currentDisplay.field3 || "--", uvRays: currentDisplay.field6 || "--"
+          });
+
+          const newGraph = { temperature: [], humidity: [], windSpeed: [], rainfall: [], pressure: [], uvRays: [] };
+          filteredFeeds.forEach(f => {
+            const time = new Date(f.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            if (f.field1) newGraph.temperature.push({ time, value: parseFloat(f.field1) });
+            if (f.field2) newGraph.humidity.push({ time, value: parseFloat(f.field2) });
+            if (f.field3) newGraph.pressure.push({ time, value: parseFloat(f.field3) });
+            if (f.field4) newGraph.windSpeed.push({ time, value: parseFloat(f.field4) });
+            if (f.field5) newGraph.rainfall.push({ time, value: parseFloat(f.field5) });
+            if (f.field6) newGraph.uvRays.push({ time, value: parseFloat(f.field6) });
+          });
+          setGraphData(newGraph);
         }
-
-        const formattedDateKey = format(selectedDate, "yyyy-MM-dd");
-
-        const filteredFeeds = json.feeds.filter((feed) =>
-          feed.created_at.startsWith(formattedDateKey),
-        );
-
-        if (filteredFeeds.length === 0) {
-          setData({});
-          setGraphData({});
-          return;
-        }
-
-        const latestFeed = filteredFeeds[filteredFeeds.length - 1];
-        setLastUpdated(new Date(latestFeed.created_at));
-
-        setData({
-          temperature: latestFeed.field1,
-          humidity: latestFeed.field2,
-          windSpeed: latestFeed.field4,
-          rainfall: latestFeed.field5,
-          pressure: latestFeed.field3,
-          uvRays: latestFeed.field6,
-        });
-
-        const newGraphData = {
-          temperature: [],
-          humidity: [],
-          windSpeed: [],
-          rainfall: [],
-          pressure: [],
-          uvRays: [],
-        };
-
-        filteredFeeds.forEach((feed) => {
-          const time = new Date(feed.created_at).toLocaleTimeString();
-          if (feed.field1)
-            newGraphData.temperature.push({
-              time,
-              value: parseFloat(feed.field1),
-            });
-          if (feed.field2)
-            newGraphData.humidity.push({
-              time,
-              value: parseFloat(feed.field2),
-            });
-          if (feed.field3)
-            newGraphData.pressure.push({
-              time,
-              value: parseFloat(feed.field3),
-            });
-          if (feed.field4)
-            newGraphData.windSpeed.push({
-              time,
-              value: parseFloat(feed.field4),
-            });
-          if (feed.field5)
-            newGraphData.rainfall.push({
-              time,
-              value: parseFloat(feed.field5),
-            });
-          if (feed.field6)
-            newGraphData.uvRays.push({ time, value: parseFloat(feed.field6) });
-        });
-
-        setGraphData(newGraphData);
-      } catch (error) {
-        console.error("Error fetching data from ThingSpeak:", error);
+      } catch (e) {
+        const raw = String(e?.message || "");
+        const message = e?.name === "AbortError"
+          ? "Weather feed request timed out. Please check your internet connection and try again."
+          : raw.includes("(400)") || raw.includes("-1")
+            ? "ThingSpeak rejected the request (400 / -1). Check the channel ID and ensure `VITE_DATA_API_KEY` is the correct ThingSpeak Read API key for that channel."
+            : "Could not load weather feed right now. Please try again later.";
+        setFetchError(message);
+        console.warn("Fetch error:", e);
       }
     };
-
     fetchData();
   }, [selectedDate, selectedLocation]);
 
   const renderChart = (type, data, color) => {
-    if (!Array.isArray(data) || data.length === 0)
-      return <p className="text-center">No data</p>;
-
-    switch (type) {
-      case "line":
-        return (
-          <ResponsiveContainer width="100%" height={200}>
-            <LineChart data={data}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="time" />
-              <YAxis />
-              <Tooltip />
-              <Line
-                type="monotone"
-                dataKey="value"
-                stroke={color}
-                strokeWidth={2}
-                dot={false}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        );
-
-      case "bar":
-        return (
-          <ResponsiveContainer width="100%" height={200}>
-            <BarChart data={data}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="time" />
-              <YAxis />
-              <Tooltip />
-              <Bar dataKey="value" fill={color} />
-            </BarChart>
-          </ResponsiveContainer>
-        );
-
-      case "scatter":
-        return (
-          <ResponsiveContainer width="100%" height={200}>
-            <ScatterChart margin={{ top: 20, right: 20, bottom: 10, left: 10 }}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="time" type="category" name="Time" />
-              <YAxis dataKey="value" name="Value" />
-              <Tooltip cursor={{ strokeDasharray: "3 3" }} />
-              <Scatter name="Data Points" data={data} fill={color} />
-            </ScatterChart>
-          </ResponsiveContainer>
-        );
-
-      default:
-        return null;
-    }
+    if (!data.length) return <div className="flex items-center justify-center h-full text-white/40">No records for this date</div>;
+    const components = {
+      line: <LineChart data={data}><XAxis dataKey="time" stroke="#ffffff60" fontSize={10} /><YAxis stroke="#ffffff60" fontSize={10} /><Tooltip contentStyle={{ backgroundColor: '#1e293b', border: 'none', borderRadius: '8px', color: '#fff' }} /><Line type="monotone" dataKey="value" stroke={color} strokeWidth={3} dot={false} /></LineChart>,
+      bar: <BarChart data={data}><XAxis dataKey="time" stroke="#ffffff60" fontSize={10} /><YAxis stroke="#ffffff60" fontSize={10} /><Tooltip /><Bar dataKey="value" fill={color} radius={[4, 4, 0, 0]} /></BarChart>,
+      scatter: <ScatterChart><XAxis dataKey="time" stroke="#ffffff60" fontSize={10} /><YAxis dataKey="value" stroke="#ffffff60" fontSize={10} /><Tooltip /><Scatter data={data} fill={color} /></ScatterChart>
+    };
+    return <ResponsiveContainer width="100%" height={200}>{components[type]}</ResponsiveContainer>;
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-100 to-purple-200 p-6 backdrop-blur-md bg-white/30 rounded-lg relative overflow-hidden">
-      <div
-        aria-hidden="true"
-        style={{
-          position: "absolute",
-          inset: 0,
-          zIndex: 0,
-          backgroundImage: `url(${bgImage})`,
-          backgroundAttachment: "fixed",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          filter: "brightness(0.6)",
-        }}
-      />
-      <div className="relative z-10">
-        <header className="w-full bg-white/30 backdrop-blur-md mb-9 shadow-md p-4 rounded-[5vh] border border-white/40 relative z-10">
-          <div className="flex flex-col md:flex-row items-center gap-4 relative">
-            {/* Left Corner: Title */}
-            <h2
-              className="text-2xl font-serif font-bold text-blue-800 md:absolute md:left-6 "
-              style={{ textShadow: "1px_1px_3px_rgba(0,0,0,0.1)" }}
-            >
-              Vrishti
-            </h2>
+    <div className="min-h-screen relative text-white font-sans overflow-x-hidden">
+      {/* Global CSS Overrides to force DatePicker to the top */}
+      <style>{`
+        .react-datepicker-popper { z-index: 9999 !important; }
+        .react-datepicker { background-color: #1e293b !important; border: 1px solid rgba(255, 255, 255, 0.2) !important; border-radius: 1.5rem !important; color: white !important; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8) !important; }
+        .react-datepicker__header { background-color: #334155 !important; border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important; }
+        .react-datepicker__current-month, .react-datepicker__day-name, .react-datepicker__day { color: white !important; }
+        .react-datepicker__day:hover { background-color: #4f46e5 !important; border-radius: 0.5rem !important; }
+        .react-datepicker__day--selected { background-color: #6366f1 !important; border-radius: 0.5rem !important; }
+        .react-datepicker__day--disabled { opacity: 0.3; }
+        .react-datepicker__triangle { display: none; }
+      `}</style>
 
-            {/* Center: Inputs */}
-            <div className="flex flex-col sm:flex-row items-center gap-4 mx-auto">
-              {/* Date Picker */}
+      <div className="fixed inset-0 z-0 bg-slate-900">
+        <div className="absolute inset-0 bg-cover bg-center opacity-40 grayscale-[0.5]" style={{ backgroundImage: `url(${bgImage})` }} />
+        <div className="absolute inset-0 bg-gradient-to-b from-slate-900/80 via-transparent to-slate-900" />
+      </div>
+
+      <div className="relative z-10 p-4 md:p-8">
+        <header className="flex flex-col md:flex-row justify-between items-center bg-white/10 backdrop-blur-xl border border-white/20 rounded-[2rem] p-6 mb-8 gap-6 shadow-2xl">
+          <h1 className="text-3xl font-serif font-bold tracking-tight">Vrishti</h1>
+
+          <div className="flex flex-wrap justify-center items-center gap-4">
+            <div className="relative">
               <DatePicker
                 selected={selectedDate}
-                onChange={(date) => setSelectedDate(date)}
+                onChange={d => setSelectedDate(d)}
+                maxDate={new Date()}
                 dateFormat="yyyy-MM-dd"
-                className="border border-gray-300 rounded-lg p-2 text-center w-40 bg-white/30 backdrop-blur-md"
+                portalId="root-portal" /* Forces the dropdown to the top level of the DOM */
+                className="bg-white/10 border border-white/20 rounded-xl px-4 py-2 outline-none text-center w-40 text-white placeholder-white/60 focus:ring-2 focus:ring-indigo-400 cursor-pointer hover:bg-white/20 transition-all shadow-inner"
               />
+            </div>
 
-              {/* Location Selector */}
+            <div className="relative group">
               <select
                 value={selectedLocation}
-                onChange={(e) => setSelectedLocation(e.target.value)}
-                className="border border-gray-300 rounded-lg p-2 text-center w-40 bg-white/30 backdrop-blur-md"
+                onChange={e => setSelectedLocation(e.target.value)}
+                className="bg-white/10 border border-white/20 rounded-xl px-4 py-2 pr-10 outline-none appearance-none cursor-pointer w-44 text-white focus:ring-2 focus:ring-indigo-400 transition-all"
               >
-                <option value="location1">Location 1</option>
-                <option value="location2">Location 2</option>
-                <option value="location3">Location 3</option>
-                <option value="location4">Location 4</option>
+                <option value="location1" className="bg-slate-800">Station Alpha</option>
+                <option value="location2" className="bg-slate-800">Station Beta</option>
               </select>
+              <span className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none opacity-50">▼</span>
             </div>
-            {/* Right Corner: Links and Logout Button */}
-            <div className="flex gap-8 items-center md:absolute md:right-6">
-              <Link
-                to="/vrishti"
-                className="bg-white/50 hover:bg-gray-100 text-gray-800 px-4 py-2 rounded-lg shadow-md backdrop-blur-md border border-white/40 text-sm font-medium"
-              >
-                Know About Vrishti
-              </Link>
-              <button
-                onClick={() => setShowLatestModal(true)}
-                className="bg-white/50 hover:bg-gray-100 text-gray-800 px-4 py-2 rounded-lg shadow-md backdrop-blur-md border border-white/40 text-sm font-medium"
-              >
-                Latest Data
-              </button>
+          </div>
 
-              <button
-                onClick={handleLogout}
-                className="bg-white/50 hover:bg-gray-100 text-gray-800 px-5 py-2 rounded-lg shadow-md backdrop-blur-md border border-white/40"
-              >
-                Logout
-              </button>
-            </div>
+          <div className="flex gap-3">
+            <Link to="/vrishti" className="bg-white/5 hover:bg-white/10 border border-white/20 px-4 py-2 rounded-xl text-sm transition-all">About</Link>
+            <button onClick={() => setShowLatestModal(true)} className="bg-indigo-600 hover:bg-indigo-500 px-5 py-2 rounded-xl text-sm font-bold shadow-lg transition-all">Latest Data</button>
+            <button onClick={() => { document.cookie = "loginUserId=; max-age=0; path=/"; navigate("/login"); }} className="bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 px-4 py-2 rounded-xl text-sm text-red-200 transition-all">Logout</button>
           </div>
         </header>
 
-        {/* ✅ Data Cards */}
+        {fetchError && (
+          <div className="mb-8 bg-red-500/10 border border-red-500/20 text-red-200 rounded-2xl px-5 py-3 text-sm">
+            {fetchError}
+          </div>
+        )}
 
-        <div
-          className="flex md:flex-nowrap flex-row overflow-x-auto md:overflow-x-visible space-x-4 md:space-x-10 pb-4 mb-6 justify-start md:justify-center gap-0 scrollbar-thin scrollbar-thumb-blue-300 scrollbar-track-blue-100"
-          style={{ WebkitOverflowScrolling: "touch" }}
-        >
+        {/* Metric Cards Grid */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
           {graphConfig.map((item) => (
-            <motion.div
-              key={item.key}
-              className={`min-w-[220px] md:min-w-[200px] md:w-auto rounded-xl shadow-md p-4 bg-white/30 backdrop-blur-md border border-white/40`}
-              whileHover={{ scale: 1.05 }}
-              transition={{ type: "spring", stiffness: 300 }}
-              style={{ flex: "0 0 auto" }}
-            >
-              <div className="text-4xl mb-2 flex justify-center">
-                {item.icon}
-              </div>
-              <h3 className="text-xl font-semibold text-center">
-                {item.label}
+            <motion.div key={item.key} whileHover={{ y: -5 }} className="bg-white/10 backdrop-blur-md border border-white/10 p-5 rounded-3xl text-center flex flex-col items-center group relative overflow-hidden">
+              <div className="absolute -right-2 -top-2 w-16 h-16 bg-white/5 rounded-full blur-2xl group-hover:bg-white/10 transition-all" />
+              <span className="text-3xl mb-2">{item.icon}</span>
+              <p className="text-white/60 text-[10px] font-bold uppercase tracking-widest">{item.label}</p>
+              <h3 className="text-2xl font-bold mt-1 text-white">
+                {data[item.key] || "--"}
+                <span className="text-sm font-normal ml-1 opacity-60">{item.unit}</span>
               </h3>
-              <p className="text-lg text-gray-700 text-center">
-                {data[item.key] !== "-" && data[item.key] !== undefined
-                  ? data[item.key]
-                  : "N/A"}
-              </p>
             </motion.div>
           ))}
         </div>
-        {/* ✅ Graphs */}
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 px-6">
+
+        {/* Charts Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
           {graphConfig.map((item) => (
-            <div
-              key={item.key}
-              className="bg-white/30 rounded-xl p-4 shadow-md backdrop-blur-md border border-white/40"
-            >
-              <div className="flex justify-between items-center mb-2">
-                <h4 className="text-md font-semibold">{item.label}</h4>
+            <div key={item.key} className="bg-white/5 backdrop-blur-md border border-white/10 p-6 rounded-[2.5rem] shadow-xl">
+              <div className="flex justify-between items-center mb-6 px-2">
+                <h4 className="font-bold text-white/80 flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full" style={{ backgroundColor: item.stroke }}></span>
+                  {item.label}
+                </h4>
                 <select
                   value={chartTypes[item.key]}
-                  onChange={(e) =>
-                    setChartTypes((prev) => ({
-                      ...prev,
-                      [item.key]: e.target.value,
-                    }))
-                  }
-                  className="border p-1 rounded-md text-sm bg-white/30 backdrop-blur-md"
+                  onChange={e => setChartTypes(p => ({ ...p, [item.key]: e.target.value }))}
+                  className="bg-white/5 text-[10px] border border-white/10 rounded-lg px-2 py-1 outline-none text-white/70"
                 >
-                  <option value="line">Line</option>
-                  <option value="bar">Bar</option>
-                  <option value="scatter">Scatter</option>
+                  <option value="line" className="bg-slate-800">Line</option>
+                  <option value="bar" className="bg-slate-800">Bar</option>
+                  <option value="scatter" className="bg-slate-800">Dots</option>
                 </select>
               </div>
-              <ResponsiveContainer width="100%" height={200}>
-                {renderChart(
-                  chartTypes[item.key],
-                  graphData[item.key] || [],
-                  item.stroke,
-                )}
-              </ResponsiveContainer>
+              {renderChart(chartTypes[item.key], graphData[item.key] || [], item.stroke)}
             </div>
           ))}
         </div>
       </div>
-      {/* ================= LATEST DATA MODAL ================= */}
-      {showLatestModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-          <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.3 }}
-            className="w-[90%] max-w-4xl bg-white/30 backdrop-blur-xl rounded-2xl p-6 shadow-xl border border-white/40 relative"
-          >
-            {/* Close Button */}
-            <button
-              onClick={() => setShowLatestModal(false)}
-              className="absolute top-4 right-4 text-xl font-bold text-gray-800 hover:text-black"
-            >
-              ✕
-            </button>
 
-            {/* Title */}
-            <h2 className="text-2xl font-bold text-center mb-2">
-              Latest Weather Data
-            </h2>
-
-            {/* Last Updated */}
-            <p className="text-center text-sm text-gray-700 mb-6">
-              🕒 Last Updated:{" "}
-              {latestData
-                ? new Date(latestData.createdAt).toLocaleDateString() +
-                  " " +
-                  new Date(latestData.createdAt).toLocaleTimeString()
-                : "N/A"}
-            </p>
-
-            {/* Data Cards */}
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-              {graphConfig.map((item) => (
-                <motion.div
-                  key={item.key}
-                  className="rounded-xl shadow-md p-4 bg-white/40 backdrop-blur-md border border-white/40"
-                  whileHover={{ scale: 1.05 }}
-                >
-                  <div className="text-4xl mb-2 flex justify-center">
-                    {item.icon}
+      <AnimatePresence>
+        {showLatestModal && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowLatestModal(false)} className="absolute inset-0 bg-slate-900/80 backdrop-blur-sm" />
+            <motion.div initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }} className="relative w-full max-w-2xl bg-slate-800 border border-white/20 rounded-[3rem] p-10 shadow-2xl overflow-hidden">
+              <button onClick={() => setShowLatestModal(false)} className="absolute top-8 right-8 text-2xl opacity-50 hover:opacity-100 transition-opacity">✕</button>
+              <h2 className="text-4xl font-bold mb-2">Latest Data</h2>
+              <p className="text-white/40 text-sm mb-10 tracking-wide uppercase">Last Sync: {latestData ? new Date(latestData.createdAt).toLocaleString() : "Syncing..."}</p>
+              <div className="grid grid-cols-2 gap-4 relative z-10">
+                {graphConfig.map(i => (
+                  <div key={i.key} className="bg-white/5 border border-white/10 p-6 rounded-3xl flex justify-between items-center group hover:bg-white/10 transition-all">
+                    <div className="flex flex-col">
+                      <span className="text-white/40 text-xs font-bold uppercase">{i.label}</span>
+                      <span className="text-xl font-bold mt-1 text-white">{latestData?.[i.key] || "--"}<span className="text-sm ml-1 opacity-50">{i.unit}</span></span>
+                    </div>
+                    <span className="text-3xl grayscale group-hover:grayscale-0 transition-all">{i.icon}</span>
                   </div>
-
-                  <h3 className="text-lg font-semibold text-center">
-                    {item.label}
-                  </h3>
-
-                  <p className="text-md text-gray-800 text-center">
-                    {latestData && latestData[item.key]
-                      ? latestData[item.key]
-                      : "N/A"}
-                  </p>
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
-        </div>
-      )}
-      {/* ==================================================== */}
+                ))}
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
