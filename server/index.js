@@ -5,6 +5,7 @@ import { nanoid } from "nanoid";
 import nodemailer from "nodemailer";
 import dotenv from "dotenv";
 import bcrypt from "bcrypt";
+import Weather from "./Models/Weather.js";
 
 dotenv.config();
 
@@ -22,13 +23,18 @@ const transporter = nodemailer.createTransport({
 });
 
 // ✅ MongoDB Connection
+// mongoose
+//   .connect("mongodb://127.0.0.1:27017/user", {
+//     useNewUrlParser: true,
+//     useUnifiedTopology: true,
+//   })
 mongoose
-  .connect("mongodb://127.0.0.1:27017/user", {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
-  .then(() => console.log("MongoDB connected ✅"))
+  .connect(process.env.MONGO_URI)
+  .then(() => console.log("MongoDB Atlas connected ✅"))
   .catch((err) => console.error("Connection error ❌:", err));
+
+// .then(() => console.log("MongoDB connected ✅"))
+// .catch((err) => console.error("Connection error ❌:", err));
 
 // ✅ User Schema
 const userSchema = new mongoose.Schema({
@@ -135,7 +141,24 @@ app.post("/login", async (req, res) => {
   }
 });
 
+app.post("/api/weather", async (req, res) => {
+  try {
+    const newWeather = await Weather.create(req.body);
+    res.status(201).json(newWeather);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+app.get("/api/weather", async (req, res) => {
+  try {
+    const data = await Weather.find().sort({ createdAt: 1 });
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 // Start server
 app.listen(3001, () =>
-  console.log("Server running on http://localhost:3001 🚀")
+  console.log("Server running on http://localhost:3001 🚀"),
 );
