@@ -99,7 +99,15 @@ const graphConfig = [
 const Dashboard = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedLocation, setSelectedLocation] = useState("location1");
-  const [graphData, setGraphData] = useState({});
+ const [graphData, setGraphData] = useState({
+   temperature: [],
+   humidity: [],
+   windSpeed: [],
+   rainfall: [],
+   pressure: [],
+   uvRays: [],
+ });
+
   const [chartTypes, setChartTypes] = useState(
     graphConfig.reduce((acc, item) => ({ ...acc, [item.key]: "line" }), {})
   );
@@ -149,49 +157,60 @@ const Dashboard = () => {
           channelId = "7654321";
           usedApiKey = "RANDOMAPIKEY4";
         }
-        const res = await fetch(
-          `https://api.thingspeak.com/channels/${channelId}/feeds.json?api_key=${usedApiKey}&results=100`,
-        );
+        const res = await fetch("http://localhost:3001/api/weather");
+
         const json = await res.json();
         // ✅ ALWAYS store LAST ADDED DATA (independent of selected date)
-        if (json.feeds && json.feeds.length > 0) {
-          const lastFeed = json.feeds[json.feeds.length - 1];
+        if (json && json.length > 0) {
+          const lastFeed = json[json.length - 1];
+
 
           setLatestData({
-            temperature: lastFeed.field1,
-            humidity: lastFeed.field2,
-            windSpeed: lastFeed.field4,
-            rainfall: lastFeed.field5,
-            pressure: lastFeed.field3,
-            uvRays: lastFeed.field6,
-            createdAt: lastFeed.created_at,
+            temperature: lastFeed.temperature,
+            humidity: lastFeed.humidity,
+            windSpeed: lastFeed.windSpeed,
+            rainfall: lastFeed.rainLevel,
+            pressure: lastFeed.pressure,
+            uvRays: lastFeed.uvIntensity,
+            createdAt: lastFeed.createdAt,
           });
 
-          setLastUpdated(new Date(lastFeed.created_at));
+          setLastUpdated(new Date(lastFeed.createdAt));
+
         }
 
         const formattedDateKey = format(selectedDate, "yyyy-MM-dd");
 
-        const filteredFeeds = json.feeds.filter((feed) =>
-          feed.created_at.startsWith(formattedDateKey),
+        const filteredFeeds = json.filter((feed) =>
+          new Date(feed.createdAt).toISOString().startsWith(formattedDateKey),
         );
 
         if (filteredFeeds.length === 0) {
           setData({});
-          setGraphData({});
+        setGraphData({
+          temperature: [],
+          humidity: [],
+          windSpeed: [],
+          rainfall: [],
+          pressure: [],
+          uvRays: [],
+        });
+
           return;
         }
 
         const latestFeed = filteredFeeds[filteredFeeds.length - 1];
-        setLastUpdated(new Date(latestFeed.created_at));
+        setLastUpdated(new Date(latestFeed.createdAt));
+
+
 
         setData({
-          temperature: latestFeed.field1,
-          humidity: latestFeed.field2,
-          windSpeed: latestFeed.field4,
-          rainfall: latestFeed.field5,
-          pressure: latestFeed.field3,
-          uvRays: latestFeed.field6,
+          temperature: latestFeed.temperature,
+          humidity: latestFeed.humidity,
+          windSpeed: latestFeed.windSpeed,
+          rainfall: latestFeed.rainLevel,
+          pressure: latestFeed.pressure,
+          uvRays: latestFeed.uvIntensity,
         });
 
         const newGraphData = {
@@ -204,39 +223,48 @@ const Dashboard = () => {
         };
 
         filteredFeeds.forEach((feed) => {
-          const time = new Date(feed.created_at).toLocaleTimeString();
-          if (feed.field1)
+          const time = new Date(feed.createdAt).toLocaleTimeString();
+
+          if (feed.temperature)
             newGraphData.temperature.push({
               time,
-              value: parseFloat(feed.field1),
+              value: feed.temperature,
             });
-          if (feed.field2)
+
+          if (feed.humidity)
             newGraphData.humidity.push({
               time,
-              value: parseFloat(feed.field2),
+              value: feed.humidity,
             });
-          if (feed.field3)
+
+          if (feed.pressure)
             newGraphData.pressure.push({
               time,
-              value: parseFloat(feed.field3),
+              value: feed.pressure,
             });
-          if (feed.field4)
+
+          if (feed.windSpeed)
             newGraphData.windSpeed.push({
               time,
-              value: parseFloat(feed.field4),
+              value: feed.windSpeed,
             });
-          if (feed.field5)
+
+          if (feed.rainLevel)
             newGraphData.rainfall.push({
               time,
-              value: parseFloat(feed.field5),
+              value: feed.rainLevel,
             });
-          if (feed.field6)
-            newGraphData.uvRays.push({ time, value: parseFloat(feed.field6) });
+
+          if (feed.uvIntensity)
+            newGraphData.uvRays.push({
+              time,
+              value: feed.uvIntensity,
+            });
         });
 
         setGraphData(newGraphData);
       } catch (error) {
-        console.error("Error fetching data from ThingSpeak:", error);
+        console.error("Error fetching data:", error);
       }
     };
 
